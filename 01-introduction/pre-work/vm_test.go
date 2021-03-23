@@ -1,4 +1,4 @@
-package main
+package pre_work
 
 import (
 	"os"
