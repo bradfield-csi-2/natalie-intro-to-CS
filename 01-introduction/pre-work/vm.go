@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 )
 
@@ -40,7 +42,7 @@ func compute(memory []byte) error {
 	registers := [3]byte{8, 0, 0} // PC, R1 and R2
 
 	// Keep looping, like a physical computer's clock
-	for int(registers[0]) < len(memory) {
+	for {
 		// Program Counter
 		pc := registers[0]
 		op := memory[pc] // fetch the opcode
@@ -59,10 +61,10 @@ func compute(memory []byte) error {
 			memory[memory[pc+2]] = registers[memory[pc+1]]
 		case Add:
 			// add     r1  r2      # Set r1 = r1 + r2
-			registers[memory[pc+1]] = memory[memory[pc+1]] + memory[memory[pc+2]]
+			registers[memory[pc+1]] = registers[memory[pc+1]] + registers[memory[pc+2]]
 		case Sub:
 			// sub     r1  r2      # Set r1 = r1 - r2
-			registers[memory[pc+1]] = memory[memory[pc+1]] - memory[memory[pc+2]]
+			registers[memory[pc+1]] = registers[memory[pc+1]] - registers[memory[pc+2]]
 		case Halt:
 			return nil
 		case Addi:
@@ -86,6 +88,8 @@ func compute(memory []byte) error {
 		}
 		// Move Program Counter
 		registers[0] += NextInstructionOffset
+
+		fmt.Printf("reg1: %d", registers[1])
+		fmt.Printf("reg2: %d", registers[2])
 	}
-	return nil
 }
