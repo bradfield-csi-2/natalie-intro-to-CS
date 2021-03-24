@@ -7,12 +7,20 @@ import (
 	"testing"
 )
 
-type vmCase struct{ x, y, out byte }
+type vmCase struct {
+	x   byte
+	y   byte
+	out byte
+	err *string
+}
+
 type vmTest struct {
 	name  string
 	asm   string
 	cases []vmCase
 }
+
+var InvalidMemoryError = "invalid memory address"
 
 var mainTests = []vmTest{
 	// Do nothing, just halt
@@ -20,7 +28,7 @@ var mainTests = []vmTest{
 		name: "Halt",
 		asm: `
 halt`,
-		cases: []vmCase{{0, 0, 0}},
+		cases: []vmCase{{0, 0, 0, nil}},
 	},
 	// Move a value from input to output
 	{
@@ -30,8 +38,18 @@ load r1 1
 store r1 0
 halt`,
 		cases: []vmCase{
-			{1, 0, 1},
-			{255, 0, 255},
+			{1, 0, 1, nil},
+			{255, 0, 255, nil},
+		},
+	},
+	{
+		name: "LoadStoreInvalidMemory",
+		asm: `
+load r1 1
+store r1 9
+halt`,
+		cases: []vmCase{
+			{1, 0, 0, &InvalidMemoryError},
 		},
 	},
 	// Add two unsigned integers together
@@ -44,9 +62,9 @@ add r1 r2
 store r1 0
 halt`,
 		cases: []vmCase{
-			{1, 2, 3},     // 1 + 2 = 3
-			{254, 1, 255}, // support max int
-			{255, 1, 0},   // correctly overflow
+			{1, 2, 3, nil},     // 1 + 2 = 3
+			{254, 1, 255, nil}, // support max int
+			{255, 1, 0, nil},   // correctly overflow
 		},
 	},
 	{
@@ -58,8 +76,8 @@ sub r1 r2
 store r1 0
 halt`,
 		cases: []vmCase{
-			{5, 3, 2},
-			{0, 1, 255}, // correctly overflow backwards
+			{5, 3, 2, nil},
+			{0, 1, 255, nil}, // correctly overflow backwards
 		},
 	},
 }
@@ -73,7 +91,7 @@ load r1 1
 jump 16
 store r1 0
 halt`,
-		cases: []vmCase{{42, 0, 0}},
+		cases: []vmCase{{42, 0, 0, nil}},
 	},
 	// Support a "branch if equal to zero" with relative offsets
 	{
@@ -85,8 +103,8 @@ beqz r2 3
 store r1 0
 halt`,
 		cases: []vmCase{
-			{42, 0, 0},  // r2 is zero, so should branch over the store
-			{42, 1, 42}, // r2 is nonzero, so should store back 42
+			{42, 0, 0, nil},  // r2 is zero, so should branch over the store
+			{42, 1, 42, nil}, // r2 is nonzero, so should store back 42
 		},
 	},
 	// Support adding immediate values
@@ -99,8 +117,8 @@ addi r1 5
 store r1 0
 halt`,
 		cases: []vmCase{
-			{0, 0, 8},   // 0 + 3 + 5 = 8
-			{20, 0, 28}, // 20 + 3 + 5 = 8
+			{0, 0, 8, nil},   // 0 + 3 + 5 = 8
+			{20, 0, 28, nil}, // 20 + 3 + 5 = 8
 		},
 	},
 	// Calculate the sum of first n numbers (using subi to decrement loop index)
@@ -115,10 +133,10 @@ jump 11
 store r2 0
 halt`,
 		cases: []vmCase{
-			{0, 0, 0},
-			{1, 0, 1},
-			{5, 0, 15},
-			{10, 0, 55},
+			{0, 0, 0, nil},
+			{1, 0, 1, nil},
+			{5, 0, 15, nil},
+			{10, 0, 55, nil},
 		},
 	},
 }
@@ -148,11 +166,15 @@ func testCompute(t *testing.T, test vmTest) {
 		memory[1] = c.x
 		memory[2] = c.y
 
-		compute(memory)
+		err := compute(memory)
 
 		actual := memory[0]
 		if actual != c.out {
 			t.Fatalf("Expected f(%d, %d) to be %d, not %d", c.x, c.y, c.out, actual)
+		}
+
+		if err != nil && c.err != nil && err.Error() != *c.err || (c.err != nil && err == nil) {
+			t.Fatalf("Expected f(%d, %d) to return %v, not %v", c.x, c.y, c.err, err)
 		}
 
 		memory[1] = 0
