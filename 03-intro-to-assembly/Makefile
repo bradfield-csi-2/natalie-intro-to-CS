@@ -23,7 +23,7 @@ ALL_OBJS = $(filter-out $(EXCLUSIONS),$(C_OBJS) $(AS_OBJS) vendor/unity.o)
 
 CC_CMD = $(CC) $(ALL_CFLAGS) -c -o $@ $<
 
-all: ../../../../Downloads/assembly-prework/tests
+all: tests
 	@./$<
 
 tests: $(ALL_OBJS)
@@ -35,7 +35,7 @@ tests: $(ALL_OBJS)
 %.o: %.c
 	@$(CC_CMD)
 
-vendor/unity.o: ../../../../Downloads/assembly-prework/vendor/unity.c vendor/unity.h vendor/unity_internals.h
+vendor/unity.o: vendor/unity.c vendor/unity.h vendor/unity_internals.h
 	@$(CC_CMD)
 
 clean:
