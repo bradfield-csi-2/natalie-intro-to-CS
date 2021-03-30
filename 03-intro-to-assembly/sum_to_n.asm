@@ -1,17 +1,13 @@
 section .text
 global sum_to_n
 sum_to_n:
-    mov         rcx, 0
-    mov         rdx, 0
-    mov         rbx, 1
-
+    mov         rax, 0         ; total
+    mov         rcx, 0         ; counter
 loop:
-    add         rcx, rdx
-    add         rdx, rbx
-    cmp         rdx, rdi
+    add         rax, rcx
+    add         rcx, 1         ; increment counter
+    cmp         rcx, rdi       ; check that our counter is still <= n
     jle         loop
-    call        done
-
-done:
-    mov         rax, rcx
+    jmp         end
+end:
     ret
