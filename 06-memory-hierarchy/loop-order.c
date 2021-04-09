@@ -6,7 +6,7 @@ Spotted at:
 http://stackoverflow.com/questions/9936132/why-does-the-order-of-the-loops-affect-performance-when-iterating-over-a-2d-arra
 
 */
-// While both loops execute the same number of instructions, the first loop is ~15 times faster because the second loop
+// While both loops execute the same number of instructions, the second loop experiences 15 times more cache misses because it
 // jumps around in memory which results in poor spacial locality.
 
 // D1 (First level data cache) miss rate - 0.9%

@@ -69,6 +69,14 @@ int main(int argc, char *argv[]) {
   // input matrices should have random values
   matrix_fill_random(A, n, n);
   matrix_fill_random(B, n, n);
+//    A[0][0] = 1;
+//    A[0][1] = 2;
+//    A[1][0] = 4;
+//    A[1][1] = 6;
+//    B[0][0] = 5;
+//    B[0][1] = 3;
+//    B[1][0] = 1;
+//    B[1][1] = 8;
 
   // compute the product naively
   flush_cache();
